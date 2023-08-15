@@ -1,0 +1,20 @@
+services:
+  web:
+    build: ./
+    restart: unless-stopped
+    container_name: bot_admin
+    env_file: .env
+    volumes:
+      - ./:/app/
+    ports:
+      - "${DOCKER_EXPOSE_PORT:-8000}:${DJANGO_PORT:-8000}"
+    command: sh -c "python3 src/manage.py migrate && cd src && python3 manage.py collectstatic --noinput && uvicorn message_sender.asgi:application --host 0.0.0.0"
+
+  bot:
+    build: ./
+    restart: unless-stopped
+    container_name: bot_worker
+    command: python3 src/main.py
+    env_file: .env
+    volumes:
+      - ./:/app/
